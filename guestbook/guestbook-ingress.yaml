@@ -5,7 +5,7 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-  - host: guestbook.cluster.cat
+  - host: guestbook.cluster.placeholder
     http:
       paths:
       - path: /

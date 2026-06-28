@@ -1,0 +1,39 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: guestbook
+  namespace: argocd
+spec:
+  goTemplate: true
+  goTemplateOptions: ["missingkey=error"]
+  generators:
+  - list:
+      elements:
+      - cluster: cpanel
+        domain: cat
+      - cluster: ubuntu-vm1
+        domain: dog
+  template:
+    metadata:
+      name: '{{.cluster}}-guestbook'
+    spec:
+      project: default
+      source:
+        repoURL: https://github.com/eugeneidoronin/argocd-example-apps.git
+        targetRevision: HEAD
+        path: guestbook   
+        kustomize:
+          patches:
+            - target:
+                kind: Ingress
+                name: guestbook-ingress
+              patch: |-
+                - op: replace
+                  path: /spec/rules/0/host
+                  value: guestbook.cluster.{{.domain}}
+      destination:
+        name: '{{.cluster}}'   
+        namespace: guestbook
+      syncPolicy:
+        syncOptions:
+          - CreateNamespace=true
